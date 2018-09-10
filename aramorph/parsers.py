@@ -2,7 +2,7 @@ import re
 from io import open
 
 
-def process_textfile(filename):
+def parse_textfile(filename):
     root = ''  # should always be empty for prefixes and suffixes
     with open(filename, "r", errors='ignore') as f:
         for nr, line in enumerate(f):
@@ -32,7 +32,7 @@ def process_textfile(filename):
                 # zero prefix/suffix is handled correctly
 
                 # make pos and gloss more human-readable
-                pos, gloss = process_pos(vowelled, cat, gloss)
+                pos, gloss = parse_pos(vowelled, cat, gloss)
 
                 # concept of a root is usually useless when word is a proper
                 # noun
@@ -67,7 +67,7 @@ pos_replacement = {
 }
 
 
-def process_pos(voc, cat, glossPOS):
+def parse_pos(voc, cat, glossPOS):
     m = re.search('<pos>.*/(.+?)</pos>', glossPOS)
     if m:
         POS = m.group(1)
@@ -112,7 +112,7 @@ def process_pos(voc, cat, glossPOS):
     return POS, gloss
 
 
-def process_tableXY(filename):
+def parse_tableXY(filename):
     with open(filename, "r") as f:
         for line in f:
             if line.startswith(';'):

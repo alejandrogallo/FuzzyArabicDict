@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 
-with open('README.rst') as fd:
+with open('README.md') as fd:
     long_description = fd.read()
 
 setup(
-    name='papis-scihub',
+    name='FuzzyArabicDict',
     version='1.2.0',
     author='FuzzyArabicDict team',
     maintainer='Alejandro Gallo',
     maintainer_email='aamsgallo@gmail.com',
-    license='GPLv3',
+    license='GPL',
     url='https://github.com/alejandrogallo/FuzzyArabicDict',
     install_requires=[
         'six',
     ],
+    packages=find_packages(),
     classifiers=[
         'Environment :: Console',
         'Environment :: Console :: Curses',
@@ -24,6 +25,7 @@ setup(
         'Operating System :: MacOS',
         'Operating System :: POSIX',
         'Operating System :: Unix',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
