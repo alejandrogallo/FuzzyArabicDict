@@ -58,7 +58,7 @@ def parse_tableAC():
     return ac
 
 
-def get_aramorpher():
+def get_analyser():
     # TODO: get pickle to work
     #with open(aramorph.data.aramorph_path, "rb") as f:
         #ai = load(f)
@@ -72,6 +72,6 @@ def get_aramorpher():
 
 
 def create_pickle_aramorpher_file():
-    morph = get_aramorpher()
+    morph = get_analyser()
     with open(aramorph_path, "wb+") as f:
         pickle.dump(morph, f, pickle.HIGHEST_PROTOCOL)
