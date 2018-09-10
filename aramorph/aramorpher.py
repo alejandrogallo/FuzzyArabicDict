@@ -7,7 +7,7 @@ Buckwalter Arabic Morphological Analyzer (GPL'ed)
 Run this first:
 > python make_pickle.py
 """
-import transliterate
+import aramorph.transliterate as transliterate
 
 class Morpheme(object):
     def __init__(self, vowelled, cat, pos, gloss, root):
@@ -15,38 +15,38 @@ class Morpheme(object):
         self.gloss      = gloss
         self.cat        = cat  # for verifying compatibility
         self.pos        = pos  # human-readable part of speech
-        self.root       = root # only really valid for (a subset of) stems, 
+        self.root       = root # only really valid for (a subset of) stems,
                                # empty for everything else
-                               
+
     def __str__(self):
         return "%s (%s) %s %s %s" % (self.vowelled, self.root, self.cat, self.pos, self.gloss)
-    
+
     def __repr__(self):
         return self.__str__()
-        
+
 # this is what we'll pickle
 class Aramorpher(object):
 
     def __init__(self, prefixes, stems, suffixes, ab, bc, ac):
-        self.prefixes = prefixes # key=unvowelled, 
+        self.prefixes = prefixes # key=unvowelled,
         self.stems = stems       # value = list of Morphemes
         self.suffixes = suffixes
         self.ab = ab # key = LHS cat. value = list of compatible RHS cats.
         self.bc = bc
         self.ac = ac
-        
+
     def is_valid_prefix(self, unvowelled_prefix):
         return unvowelled_prefix in self.prefixes
-        
+
     def is_valid_stem(self, unvowelled_stem):
         return unvowelled_stem in self.stems
 
     def is_valid_suffix(self, unvowelled_suffix):
         return unvowelled_suffix in self.suffixes
-        
+
     def are_prefix_stem_compatible(self, prefix_morpheme, stem_morpheme):
         return stem_morpheme.cat in self.ab[prefix_morpheme.cat]
-        
+
     def are_stem_suffix_compatible(self, stem_morpheme, suffix_morpheme):
         return suffix_morpheme.cat in self.bc[stem_morpheme.cat]
 
@@ -72,7 +72,7 @@ class Aramorpher(object):
                 stem = word[prelen:(prelen+stemlen)]
                 suffix = word[(prelen+stemlen):]
                 segments.append((prefix, stem, suffix))
-                
+
                 stemlen -= 1
                 suflen += 1
 
@@ -92,11 +92,11 @@ class Aramorpher(object):
 
         for alternative in self.alternatives(word):
             for (prefix, stem, suffix) in self.segment(alternative):
-                if (self.is_valid_prefix(prefix) and 
+                if (self.is_valid_prefix(prefix) and
                     self.is_valid_stem(stem) and
                     self.is_valid_suffix(suffix)):
-                    
-                    solutions = self.check_compatibility(alternative, 
+
+                    solutions = self.check_compatibility(alternative,
                                                     prefix, stem, suffix)
                     for solution in solutions:
                         if solution not in results:
@@ -113,9 +113,9 @@ class Aramorpher(object):
     def check_compatibility(self, word, prefix, stem, suffix):
         """Returns all possible compatible solutions of a prefix, stem and suffix"""
         solutions = []
-        
+
         # loop through possible prefix entries
-        for prefix_entry in self.prefixes[prefix]:        
+        for prefix_entry in self.prefixes[prefix]:
             # loop through possible stem entries
             for stem_entry in self.stems[stem]:
                 # check if prefix and stem are compatible
@@ -145,13 +145,13 @@ class Aramorpher(object):
                     gloss = "%s + %s + %s" % (prefix_entry.gloss, stem_entry.gloss, suffix_entry.gloss)
                     gloss = gloss.strip().strip("+").strip()
 
-                    solutions.append({'word': transliterate.b2u(word), 
+                    solutions.append({'word': transliterate.b2u(word),
                                       'vowelled': transliterate.b2u(vowelled_form),
-                                      'transliteration': transliterate.b2ala(vowelled_form), 
+                                      'transliteration': transliterate.b2ala(vowelled_form),
                                       'root': transliterate.b2u(stem_entry.root),
-                                      'pos': stem_entry.pos, 
+                                      'pos': stem_entry.pos,
                                       'gloss': gloss})
-                
+
         return solutions
 
     def information(self, words):

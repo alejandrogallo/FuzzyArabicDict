@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import re
+import six
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 # helper functions for converting from Buckwalter to Unicode and vice versa
 
 buck = u"'|>&<}AbptvjHxd*rzs$SDTZEg_fqklmnhwYyFNKaui~o0123456789`{"
-unic = u"".join(map(unichr,
+unic = u"".join(map(six.unichr,
              list(range(0x0621, 0x063b)) + # hamza through ghayn
              list(range(0x0640, 0x0653)) + # taTwiil through sukuun
              list(range(0x0660, 0x066A)) + # numerals
              list(range(0x0670, 0x0672)))) # dagger 'alif, waSla
 
-# more reader-friendly transliteration - ALA/Wehr 
+# more reader-friendly transliteration - ALA/Wehr
 ala  = [# hamza through ghayn
         u"ʾ",u"ʾā",u"ʾ",u"ʾ",u"ʾ",u"ʾ",u"ā",u"b",u"h",u"t",u"ṯ",u"j",u"ḥ",u"ḵ",
         u"d",u"ḏ",u"r",u"z",u"s",u"š",u"ṣ",u"ḍ",u"ṭ",u"ẓ",u"ʿ",u"ḡ",
@@ -30,7 +36,7 @@ unic2buck = dict(zip([ord(letter) for letter in unic], buck))
 
 def b2u(buckwalter_string):
     string = unicode(buckwalter_string).translate(buck2unic)
-    return string.replace(u"\u0671", u"\u0627") 
+    return string.replace(u"\u0671", u"\u0627")
     # because alef wasla doesn't show up properly in most fonts
 
 def u2b(unicode_string):
@@ -52,13 +58,13 @@ def b2ala(buckwalter_string):
     # might not be 100% correct - should they remain "uw", "iy" in some contexts?
     string = string.replace(u"uw", u"ū")
     string = string.replace(u"iy", u"ī")
-    
-    # deal with repeated vowels    
+
+    # deal with repeated vowels
     string = string.replace(u"aan", "an") # nunated alif
     string = string.replace(u"āa", u"ā")
     string = string.replace(u"ūu", u"ū")
 
-    # special case - 3 l's in Allah because there are 2 written l's 
+    # special case - 3 l's in Allah because there are 2 written l's
     # and one has a shadda
     string = string.replace(u"lll", u"ll")
 

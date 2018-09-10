@@ -1,52 +1,70 @@
 # Explore using a pickled file rather than redis
 
-import cPickle as pickle
+import six.moves.cPickle as pickle
 from collections import defaultdict
-from aramorpher import Morpheme, Aramorpher
-from process_files import process_textfile, process_tableXY
+from aramorph.aramorpher import Morpheme, Aramorpher
+from aramorph.process_files import process_textfile, process_tableXY
+import os
 
-prefixes = defaultdict(list)
-stems    = defaultdict(list)
-suffixes = defaultdict(list)
-
-ab = defaultdict(list)
-bc = defaultdict(list)
-ac = defaultdict(list)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(current_dir, 'data')
 
 def process_prefixes():
-    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile("dictprefixes.txt"):
+    prefixes = defaultdict(list)
+    path = os.path.join(data_dir, 'dictprefixes.txt')
+    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile(path):
         prefixes[unvowelled].append(Morpheme(vowelled, cat, pos, gloss, root))
+    return prefixes
 
 def process_stems():
-    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile("dictstems.txt"):
+    stems = defaultdict(list)
+    path = os.path.join(data_dir, 'dictstems.txt')
+    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile(path):
         stems[unvowelled].append(Morpheme(vowelled, cat, pos, gloss, root))
+    return stems
 
 def process_suffixes():
-    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile("dictsuffixes.txt"):
+    suffixes = defaultdict(list)
+    path = os.path.join(data_dir, 'dictsuffixes.txt')
+    for (unvowelled, vowelled, cat, pos, gloss, root) in process_textfile(path):
         suffixes[unvowelled].append(Morpheme(vowelled, cat, pos, gloss, root))
+    return suffixes
 
 def process_tableAB():
-    for (left, right) in process_tableXY("tableab.txt"):
+    ab = defaultdict(list)
+    path = os.path.join(data_dir, 'tableab.txt')
+    for (left, right) in process_tableXY(path):
         ab[left].append(right)
+    return ab
 
 def process_tableBC():
-    for (left, right) in process_tableXY("tablebc.txt"):
+    bc = defaultdict(list)
+    path = os.path.join(data_dir, 'tablebc.txt')
+    for (left, right) in process_tableXY(path):
         bc[left].append(right)
+    return bc
 
 def process_tableAC():
-    for (left, right) in process_tableXY("tableac.txt"):
+    ac = defaultdict(list)
+    path = os.path.join(data_dir, 'tableac.txt')
+    for (left, right) in process_tableXY(path):
         ac[left].append(right)
+    return ac
+
+def get_aramorpher():
+    prefixes = process_prefixes()
+    stems = process_stems()
+    suffixes = process_suffixes()
+    ab = process_tableAB()
+    bc = process_tableBC()
+    ac = process_tableAC()
+
+    return Aramorpher(prefixes, stems, suffixes, ab, bc, ac)
 
 if __name__ == "__main__":
-    process_prefixes()
-    process_stems()
-    process_suffixes()
-    process_tableAB()
-    process_tableBC()
-    process_tableAC()
 
-    # now construct AramorphInfo
-    aramorph = Aramorpher(prefixes, stems, suffixes, ab, bc, ac)
+    morph = get_aramorpher()
 
     # and pickle it
-    pickle.dump(aramorph, open("aramorph.data", "wb"), pickle.HIGHEST_PROTOCOL)
+    data_file = os.path.join(current_dir, 'aramortph.data')
+    pickle.dump(morph, open(data_file, "wb+"), pickle.HIGHEST_PROTOCOL)
