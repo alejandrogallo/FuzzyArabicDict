@@ -1,21 +1,32 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
+import aramorph
 
 with open('README.md') as fd:
     long_description = fd.read()
 
 setup(
-    name='FuzzyArabicDict',
-    version='1.2.0',
-    author='FuzzyArabicDict team',
+    name='aramorph',
+    version=aramorph.__version__,
+    author='Aramorph team',
     maintainer='Alejandro Gallo',
     maintainer_email='aamsgallo@gmail.com',
     license='GPL',
-    url='https://github.com/alejandrogallo/FuzzyArabicDict',
+    url='https://github.com/alejandrogallo/aramorph',
     install_requires=[
         'six',
     ],
     packages=find_packages(),
+    package_data=dict(
+        aramorph=[
+            "data/tablebc.txt",
+            "data/tableab.txt",
+            "data/dictprefixes.txt",
+            "data/tableac.txt",
+            "data/dictstems.txt",
+            "data/dictsuffixes.txt",
+        ],
+    ),
     classifiers=[
         'Environment :: Console',
         'Environment :: Console :: Curses',
