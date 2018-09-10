@@ -1,24 +1,28 @@
 import re
 from io import open
 
+
 def process_textfile(filename):
-    root = '' # should always be empty for prefixes and suffixes
+    root = ''  # should always be empty for prefixes and suffixes
     with open(filename, "r", errors='ignore') as f:
         for nr, line in enumerate(f):
-            if line.startswith(';--- '): # this contains the root for the following lines
+            # this contains the root for the following lines
+            if line.startswith(';--- '):
                 # root is the first word (might be followed by comments),
                 # up to the first bracket (sometimes there's "ktb(1)" etc.)
-                root = line.replace(';--- ','').split()[0].split('(')[0]
+                root = line.replace(';--- ', '').split()[0].split('(')[0]
 
                 if "/" in root:
                     # Buckwalter gives possible variants of root, e.g.
                     # Axw/y = Axw or Axy
                     # nw/yf = nwf or nyf
                     # it's always a w/y thing
-                    # go with /w/ as Hans Wehr almost always shows a /w/ as a variant
-                    root = root.replace("w/y","w")
+                    # go with /w/ as Hans Wehr almost always shows a /w/ as a
+                    # variant
+                    root = root.replace("w/y", "w")
 
-            elif line.startswith(';-----'): # "reset" line for when there's no root
+            elif line.startswith(';-----'):
+                # "reset" line for when there's no root
                 root = ''
             elif line.startswith(';'):
                 continue
@@ -30,7 +34,8 @@ def process_textfile(filename):
                 # make pos and gloss more human-readable
                 pos, gloss = process_pos(vowelled, cat, gloss)
 
-                # concept of a root is usually useless when word is a proper noun
+                # concept of a root is usually useless when word is a proper
+                # noun
                 if pos == "Proper noun":
                     local_root = ""
                 else:
@@ -39,6 +44,7 @@ def process_textfile(filename):
                 yield (unvowelled, vowelled, cat, pos, gloss, local_root)
             except:
                 continue
+
 
 p_AZ = re.compile('^[A-Z]')
 p_iy = re.compile('iy~$')
@@ -60,6 +66,7 @@ pos_replacement = {
     'FUT_PART': 'Future particle'
 }
 
+
 def process_pos(voc, cat, glossPOS):
     m = re.search('<pos>.*/(.+?)</pos>', glossPOS)
     if m:
@@ -72,7 +79,7 @@ def process_pos(voc, cat, glossPOS):
     else:
         gloss = glossPOS
         if cat.startswith('Pref-0') or cat.startswith('Suff-0'):
-            POS = "" # null prefix or suffix
+            POS = ""  # null prefix or suffix
         elif cat.startswith('F'):
             POS = "Function word"
         elif cat.startswith('IV'):
@@ -81,10 +88,14 @@ def process_pos(voc, cat, glossPOS):
             POS = "Perfect verb"
         elif cat.startswith('CV'):
             POS = "Imperative verb"
-        elif cat.startswith('N') and p_AZ.search(gloss): # gloss starts with a capital letter
-            POS = "Proper noun" # educated guess, (99% correct)
+        elif cat.startswith('N') and p_AZ.search(gloss):
+            # gloss starts with a capital letter
+            # educated guess, (99% correct)
+            POS = "Proper noun"
         elif cat.startswith('N') and p_iy.search(voc):
-            POS = "Noun" # (was NOUN_ADJ: some of these are really ADJ' and need to be tagged manually)
+            # (was NOUN_ADJ: some of these are really ADJ' and need to be
+            # tagged manually)
+            POS = "Noun"
         elif cat.startswith('N'):
             POS = "Noun"
         elif POS.startswith('ADJ'):
@@ -100,10 +111,10 @@ def process_pos(voc, cat, glossPOS):
     gloss = gloss.strip()
     return POS, gloss
 
+
 def process_tableXY(filename):
     with open(filename, "r") as f:
         for line in f:
             if line.startswith(';'):
                 continue
             yield line.strip().split()
-

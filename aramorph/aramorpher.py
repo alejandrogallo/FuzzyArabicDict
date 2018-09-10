@@ -7,31 +7,37 @@ Buckwalter Arabic Morphological Analyzer (GPL'ed)
 Run this first:
 > python make_pickle.py
 """
-import aramorph.transliterate as transliterate
+from aramorph.transliterate import b2ala, b2u, u2b
+
 
 class Morpheme(object):
     def __init__(self, vowelled, cat, pos, gloss, root):
-        self.vowelled   = vowelled
-        self.gloss      = gloss
-        self.cat        = cat  # for verifying compatibility
-        self.pos        = pos  # human-readable part of speech
-        self.root       = root # only really valid for (a subset of) stems,
-                               # empty for everything else
+        self.vowelled = vowelled
+        self.gloss = gloss
+        # for verifying compatibility
+        self.cat = cat
+        # human-readable part of speech
+        self.pos = pos
+        # only really valid for (a subset of) stems, empty for everything else
+        self.root = root
 
     def __str__(self):
-        return "%s (%s) %s %s %s" % (self.vowelled, self.root, self.cat, self.pos, self.gloss)
+        return "%s (%s) %s %s %s" % (
+            self.vowelled, self.root, self.cat, self.pos, self.gloss
+        )
 
     def __repr__(self):
         return self.__str__()
+
 
 # this is what we'll pickle
 class Aramorpher(object):
 
     def __init__(self, prefixes, stems, suffixes, ab, bc, ac):
-        self.prefixes = prefixes # key=unvowelled,
-        self.stems = stems       # value = list of Morphemes
+        self.prefixes = prefixes  # key=unvowelled,
+        self.stems = stems        # value = list of Morphemes
         self.suffixes = suffixes
-        self.ab = ab # key = LHS cat. value = list of compatible RHS cats.
+        self.ab = ab  # key = LHS cat. value = list of compatible RHS cats.
         self.bc = bc
         self.ac = ac
 
@@ -82,22 +88,25 @@ class Aramorpher(object):
 
     def analyse_arabic(self, word):
         """Find possible solutions for the given UTF8 Arabic word"""
-        buck_word = transliterate.u2b(word)
+        buck_word = u2b(word)
         return self.analyse(buck_word)
 
     def analyse(self, word):
         """Find possible solutions for the given word"""
         results = []
-        count = 0
 
         for alternative in self.alternatives(word):
             for (prefix, stem, suffix) in self.segment(alternative):
-                if (self.is_valid_prefix(prefix) and
+                if (
+                    self.is_valid_prefix(prefix) and
                     self.is_valid_stem(stem) and
-                    self.is_valid_suffix(suffix)):
+                    self.is_valid_suffix(suffix)
+                ):
 
-                    solutions = self.check_compatibility(alternative,
-                                                    prefix, stem, suffix)
+                    solutions = self.check_compatibility(
+                        alternative,
+                        prefix, stem, suffix
+                    )
                     for solution in solutions:
                         if solution not in results:
                             results.append(solution)
@@ -106,12 +115,15 @@ class Aramorpher(object):
     def alternatives(self, word):
         """Add some spelling alternatives"""
         alts = [word]
-        if word.endswith('w'): alts.append(word + 'A')
+        if word.endswith('w'):
+            alts.append(word + 'A')
         # e.g. yktbw -> yktbwA, which is what Buckwalter is looking for
         return alts
 
     def check_compatibility(self, word, prefix, stem, suffix):
-        """Returns all possible compatible solutions of a prefix, stem and suffix"""
+        """
+        Returns all possible compatible solutions of a prefix, stem and suffix
+        """
         solutions = []
 
         # loop through possible prefix entries
@@ -119,49 +131,74 @@ class Aramorpher(object):
             # loop through possible stem entries
             for stem_entry in self.stems[stem]:
                 # check if prefix and stem are compatible
-                if not self.are_prefix_stem_compatible(prefix_entry, stem_entry):
+                if not self.are_prefix_stem_compatible(
+                    prefix_entry, stem_entry
+                        ):
                     continue
                 # valid prefix and stem combo, so continue
                 # loop through possible suffix entries
                 for suffix_entry in self.suffixes[suffix]:
-                    if not self.are_stem_suffix_compatible(stem_entry, suffix_entry):
+                    if not self.are_stem_suffix_compatible(
+                        stem_entry, suffix_entry
+                            ):
                         continue
-                    if not self.are_stem_suffix_compatible(stem_entry, suffix_entry):
+                    if not self.are_stem_suffix_compatible(
+                        stem_entry, suffix_entry
+                            ):
                         continue
 
-                    # if we reached this point, the prefix-stem-suffix are compatible
-                    # return all the information necessary to display
+                    # if we reached this point, the prefix-stem-suffix are
+                    # compatible return all the information necessary to
+                    # display
                     # what do we want?
                     # 1. Arabic form (the original word)
-                    # 2. transliterated fully-vowelled form (TODO: split into pieces?)
+                    # 2. transliterated fully-vowelled form (TODO: split into
+                    #   pieces?)
                     # 3. root of the stem (TODO)
                     # 4. part of speech (just of the stem, or all?)
                     # 5. gloss
 
-                    vowelled_form = prefix_entry.vowelled + \
-                                    stem_entry.vowelled + \
-                                    suffix_entry.vowelled
+                    vowelled_form = "{0}{1}{2}".format(
+                        prefix_entry.vowelled,
+                        stem_entry.vowelled,
+                        suffix_entry.vowelled
+                    )
 
-                    gloss = "%s + %s + %s" % (prefix_entry.gloss, stem_entry.gloss, suffix_entry.gloss)
+                    gloss = "%s + %s + %s" % (
+                        prefix_entry.gloss,
+                        stem_entry.gloss,
+                        suffix_entry.gloss
+                    )
                     gloss = gloss.strip().strip("+").strip()
 
-                    solutions.append({'word': transliterate.b2u(word),
-                                      'vowelled': transliterate.b2u(vowelled_form),
-                                      'transliteration': transliterate.b2ala(vowelled_form),
-                                      'root': transliterate.b2u(stem_entry.root),
-                                      'pos': stem_entry.pos,
-                                      'gloss': gloss})
+                    solutions.append(
+                        {
+                            'word': b2u(word),
+                            'vowelled': b2u(vowelled_form),
+                            'transliteration': b2ala(vowelled_form),
+                            'root': b2u(stem_entry.root),
+                            'pos': stem_entry.pos,
+                            'gloss': gloss
+                        }
+                    )
 
         return solutions
 
     def information(self, words):
-        """Return unglossed information for a list of Arabic words (used when analyse() turned up empty)"""
+        """
+        Return unglossed information for a list of Arabic words (used when
+        analyse() turned up empty)
+        """
         solutions = list()
         for word in words:
-            solutions.append({'word': word,
-                              'vowelled': "",
-                              'transliteration': transliterate.b2ala(transliterate.u2b(word)),
-                              'pos': "",
-                              'root': "",
-                              'gloss': "Not found in dictionary"})
+            solutions.append(
+                {
+                    'word': word,
+                    'vowelled': "",
+                    'transliteration': b2ala(u2b(word)),
+                    'pos': "",
+                    'root': "",
+                    'gloss': "Not found in dictionary"
+                }
+            )
         return solutions
