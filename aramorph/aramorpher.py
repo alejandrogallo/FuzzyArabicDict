@@ -7,7 +7,7 @@ Buckwalter Arabic Morphological Analyzer (GPL'ed)
 Run this first:
 > python make_pickle.py
 """
-from aramorph.transliterate import b2ala, b2u, u2b
+from aramorph.transliterate import b2ala_wehr, b2u, u2b
 
 
 class Morpheme(object):
@@ -175,7 +175,7 @@ class Aramorpher(object):
                         {
                             'word': b2u(word),
                             'vowelled': b2u(vowelled_form),
-                            'transliteration': b2ala(vowelled_form),
+                            'transliteration': b2ala_wehr(vowelled_form),
                             'root': b2u(stem_entry.root),
                             'pos': stem_entry.pos,
                             'gloss': gloss
@@ -195,7 +195,7 @@ class Aramorpher(object):
                 {
                     'word': word,
                     'vowelled': "",
-                    'transliteration': b2ala(u2b(word)),
+                    'transliteration': b2ala_wehr(u2b(word)),
                     'pos': "",
                     'root': "",
                     'gloss': "Not found in dictionary"
