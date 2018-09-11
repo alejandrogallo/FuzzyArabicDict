@@ -1,5 +1,4 @@
-Aramorph
-|build|
+Aramorph |build|
 ========
 
 Dictionary package that allows you to look up Arabic words in
