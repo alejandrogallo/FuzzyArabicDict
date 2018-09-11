@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 import aramorph
 
-with open('README.md') as fd:
+with open('README.rst') as fd:
     long_description = fd.read()
 
 setup(
