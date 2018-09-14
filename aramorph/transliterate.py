@@ -2,14 +2,10 @@
 
 import re
 import six
+from six import u as unicode
 
-try:
-    unicode
-except NameError:
-    unicode = str
 
 # helper functions for converting from Buckwalter to Unicode and vice versa
-
 buck = u"'|>&<}AbptvjHxd*rzs$SDTZEg_fqklmnhwYyFNKaui~o0123456789`{"
 unic = u"".join(
     map(
